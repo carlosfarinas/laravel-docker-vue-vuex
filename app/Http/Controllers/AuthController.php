@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\User\RegisterRequest;
 use App\Http\Requests\User\UpdateInfoRequest;
 use App\Http\Requests\User\UpdatePasswordRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,8 +26,9 @@ class AuthController extends Controller
             'last_name'=> $request->input('last_name'),
             'email'=> $request->input('email'),
             'password'=> Hash::make($request->input('password')),
+            'role_id'=>3
         ]);
-        return response($user, Response::HTTP_CREATED);
+        return response(new UserResource($user), Response::HTTP_CREATED);
 
     }
 
@@ -47,7 +49,8 @@ class AuthController extends Controller
     }
 
     public function user(Request $request){
-        return $request->user();
+        $user = $request->user();
+        return new UserResource($user->load('role'));
     }
 
     public function logout(){
@@ -61,10 +64,9 @@ class AuthController extends Controller
     public function updateInfo(UpdateInfoRequest $request)
     {
         $user = $request->user();
-
         $user->update($request->only('first_name', 'last_name','email'));
 
-        return \response($user, Response::HTTP_ACCEPTED);
+        return \response(new UserResource($user), Response::HTTP_ACCEPTED);
     }
 
     public function updatePassword(UpdatePasswordRequest $request){
@@ -73,7 +75,7 @@ class AuthController extends Controller
             'password'=> \Hash::make($request->input('password'))
         ]);
 
-        return \response($user, Response::HTTP_ACCEPTED);
+        return \response(new UserResource($user), Response::HTTP_ACCEPTED);
 
     }
 
